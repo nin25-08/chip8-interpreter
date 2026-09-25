@@ -4,8 +4,9 @@
 #include <stdint.h>
 
 #define MEM_SIZE 4096
-#define GPVR_NUMBER 16
+#define REGISTER_COUNT 16
 #define STACK_SIZE 16
+#define FONT_SET_START_ADDRESS 0x050
 
 typedef struct
 {
@@ -16,12 +17,14 @@ typedef struct
     uint8_t sp;
     uint8_t dtimer;
     uint8_t stimer;
-    uint8_t gpvr[GPVR_NUMBER];
+    uint8_t V[REGISTER_COUNT];
 
 } chip8;
 
 extern const uint8_t font[80];
 
 void chip8_init(chip8 *cpu);
+
+void chip8_exec(chip8 *cpu,uint16_t opcode);
 
 #endif
