@@ -52,7 +52,13 @@ void chip8_init(chip8 *cpu)
 
     memcpy(&cpu->ram[FONT_SET_START_ADDRESS], font, sizeof(font)); // loads font into memory
 }
-
+//FETCH
+void chip8_cycle(chip8 *cpu,display *disp)
+{
+    uint16_t opcode = (cpu->ram[cpu->pc]<<8) | cpu->ram[cpu->pc+1];
+    chip8_exec(cpu, disp,opcode);
+}
+// EXEC AND DECODE
 void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 {
     // bitwise masks
