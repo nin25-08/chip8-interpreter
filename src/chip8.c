@@ -165,40 +165,46 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             cpu->pc += 2;
             break;
             // 8XY4 VX is set to the value of VX plus the value of VY. VY is not affected.
-        case 0x4: {
+        case 0x4:
+        {
             uint16_t sum = cpu->V[x] + cpu->V[y];
             cpu->V[0xF] = (sum > 255) ? 1 : 0;
             cpu->V[x] = sum & 0xFF;
             cpu->pc += 2;
             break;
         }
-        case 0x5: {
+        case 0x5:
+        {
             cpu->V[0xF] = (cpu->V[x] >= cpu->V[y]) ? 1 : 0;
             cpu->V[x] = cpu->V[x] - cpu->V[y];
             cpu->pc += 2;
             break;
         }
-        case 0x6: {
+        case 0x6:
+        {
             cpu->V[0xF] = cpu->V[y] & 0x1;
             cpu->V[x] = cpu->V[y] >> 1;
             cpu->pc += 2;
             break;
         }
-        case 0x7: {
+        case 0x7:
+        {
             cpu->V[0xF] = (cpu->V[y] >= cpu->V[x]) ? 1 : 0;
             cpu->V[x] = cpu->V[y] - cpu->V[x];
             cpu->pc += 2;
             break;
         }
-        case 0xE: {
+        case 0xE:
+        {
             cpu->V[0xF] = (cpu->V[y] >> 7) & 0x1;
             cpu->V[x] = cpu->V[y] << 1;
             cpu->pc += 2;
             break;
         }
+        }
 
         break;
-        case 0x9000:
+    case 0x9000:
         if (cpu->V[x] != cpu->V[y])
         {
             cpu->pc += 4;
@@ -332,17 +338,41 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
                 cpu->pc += 2;
             }
             break;
-
+            // FX29: The index register I is set to the address of the hexadecimal character in VX
         case 0x29:
             uint8_t character = cpu->V[x] & 0x0F;
             cpu->I = character * 5 + FONT_SET_START_ADDRESS;
             cpu->pc += 2;
             break;
+            // FX33  It takes the number in VX (which is one byte, so it can be any number from 0 to 255) and converts it to three decimal digits,
+            //  storing these digits in memory at the address in the index register I
         case 0x33:
+            cpu->ram[cpu->I] = cpu->V[x] / 100;
+            cpu->ram[cpu->I + 1] = (cpu->V[x] / 10) % 10;
+            cpu->ram[cpu->I + 2] = cpu->V[x] % 10;
+            cpu->pc += 2;
             break;
+            // FX55 the value of each variable register from V0 to VX inclusive (if X is 0, then only V0)
+            //  will be stored in successive memory addresses, starting with the one that’s stored in I.
+            // V0 will be stored at the address in I, V1 will be stored in I + 1,
+            //  and so on, until VX is stored in I + X.
         case 0x55:
+            for (int i = 0; i <= x; i++)
+            {
+                cpu->ram[cpu->I + i] = cpu->V[i];
+            }
+            cpu->pc += 2;
+
             break;
+            // FX65 does the opposite; it takes the value stored at the memory addresses
+            // and loads them into the variable registers instead.
         case 0x65:
+            for (int i = 0; i <= x; i++)
+            {
+                cpu->V[i]=cpu->ram[cpu->I + i];
+            }
+            cpu->pc += 2;
+
             break;
         }
         break;
