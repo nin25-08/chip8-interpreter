@@ -1,5 +1,5 @@
-#include "include/chip8.h"
-#include "include/display.h"
+#include "../include/chip8.h"
+#include "../include/display.h"
 
 static void chip8_push(chip8 *cpu, uint16_t address)
 {
@@ -315,7 +315,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
                 }
             }
 
-            if (isPressed)
+            if (!isPressed)
             {
                 cpu->pc -= 2;
             }

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include "include/chip8.h"
-#include "include/display.h"
-#include "include/keypad.h"
+#include "../include/chip8.h"
+#include "../include/display.h"
+#include "../include/keypad.h"
 
 void loadRom(chip8 *cpu, const char *filedir)
 {
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
         }
         for (int i = 0; i < 10; i++)
         {
-            chip8_cycle(&cpu, &disp);
+            chip8_cycle(&cpu, &disp); //600 instructions per sec
         }
         display_draw(&disp);
 

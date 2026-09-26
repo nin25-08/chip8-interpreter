@@ -1,4 +1,4 @@
-#include "include/keypad.h"
+#include "../include/keypad.h"
 
 int keyToNum(SDL_Keycode keyPressed)
 {
