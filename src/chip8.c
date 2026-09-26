@@ -52,11 +52,13 @@ void chip8_init(chip8 *cpu)
 
     memcpy(&cpu->ram[FONT_SET_START_ADDRESS], font, sizeof(font)); // loads font into memory
 }
-//FETCH
-void chip8_cycle(chip8 *cpu,display *disp)
+// FETCH
+void chip8_cycle(chip8 *cpu, display *disp)
 {
-    uint16_t opcode = (cpu->ram[cpu->pc]<<8) | cpu->ram[cpu->pc+1];
-    chip8_exec(cpu, disp,opcode);
+    uint16_t opcode = (cpu->ram[cpu->pc] << 8) | cpu->ram[cpu->pc + 1];
+    //increment before to have it overwritten
+    cpu->pc += 2;
+    chip8_exec(cpu, disp, opcode);
 }
 // EXEC AND DECODE
 void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
@@ -76,12 +78,11 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         if (opcode == 0x00E0)
         {
             memset(disp, 0, sizeof(*disp));
-            cpu->pc += 2;
         }
         // returning from a subroutine is done with 00EE
         if (opcode == 0x00EE)
         {
-            cpu->pc = chip8_pop(cpu) + 2;
+            cpu->pc = chip8_pop(cpu);
         }
 
         break;
@@ -101,11 +102,11 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
     case 0x3000:
         if (cpu->V[x] == NN)
         {
-            cpu->pc += 4;
+            cpu->pc += 2;
         }
         else
         {
-            cpu->pc += 2;
+            
         }
         break;
 
@@ -113,11 +114,10 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
     case 0x4000:
         if (cpu->V[x] != NN)
         {
-            cpu->pc += 4;
+            cpu->pc += 2;
         }
         else
         {
-            cpu->pc += 2;
         }
         break;
 
@@ -125,25 +125,23 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
     case 0x5000:
         if (cpu->V[x] == cpu->V[y])
         {
-            cpu->pc += 4;
+            cpu->pc += 2;
         }
         else
         {
-            cpu->pc += 2;
         }
         break;
 
         // 6XNN set the register VX to the value NN.
     case 0x6000:
         cpu->V[x] = NN;
-        cpu->pc += 2;
+
         break;
 
         // 7XNN Add the value NN to VX.
     case 0x7000:
 
         cpu->V[x] += NN;
-        cpu->pc += 2;
 
         break;
 
@@ -153,22 +151,22 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             // 8XY0 VX is set to the value of VY.
         case 0x0:
             cpu->V[x] = cpu->V[y];
-            cpu->pc += 2;
+
             break;
             // 8XY1 VX is set to the bitwise/binary logical disjunction (OR) of VX and VY. VY is not affected.
         case 0x1:
             cpu->V[x] = cpu->V[x] | cpu->V[y];
-            cpu->pc += 2;
+
             break;
             // 8XY2 VX is set to the bitwise/binary logical conjunction (AND) of VX and VY. VY is not affected.
         case 0x2:
             cpu->V[x] = cpu->V[x] & cpu->V[y];
-            cpu->pc += 2;
+
             break;
             // 8XY3 VX is set to the bitwise/binary exclusive OR (XOR) of VX and VY. VY is not affected.
         case 0x3:
             cpu->V[x] = cpu->V[x] ^ cpu->V[y];
-            cpu->pc += 2;
+
             break;
             // 8XY4 VX is set to the value of VX plus the value of VY. VY is not affected.
         case 0x4:
@@ -176,35 +174,35 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             uint16_t sum = cpu->V[x] + cpu->V[y];
             cpu->V[0xF] = (sum > 255) ? 1 : 0;
             cpu->V[x] = sum & 0xFF;
-            cpu->pc += 2;
+
             break;
         }
         case 0x5:
         {
             cpu->V[0xF] = (cpu->V[x] >= cpu->V[y]) ? 1 : 0;
             cpu->V[x] = cpu->V[x] - cpu->V[y];
-            cpu->pc += 2;
+
             break;
         }
         case 0x6:
         {
             cpu->V[0xF] = cpu->V[y] & 0x1;
             cpu->V[x] = cpu->V[y] >> 1;
-            cpu->pc += 2;
+
             break;
         }
         case 0x7:
         {
             cpu->V[0xF] = (cpu->V[y] >= cpu->V[x]) ? 1 : 0;
             cpu->V[x] = cpu->V[y] - cpu->V[x];
-            cpu->pc += 2;
+
             break;
         }
         case 0xE:
         {
             cpu->V[0xF] = (cpu->V[y] >> 7) & 0x1;
             cpu->V[x] = cpu->V[y] << 1;
-            cpu->pc += 2;
+
             break;
         }
         }
@@ -213,17 +211,16 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
     case 0x9000:
         if (cpu->V[x] != cpu->V[y])
         {
-            cpu->pc += 4;
+            cpu->pc += 2;
         }
         else
         {
-            cpu->pc += 2;
         }
         break;
         // 0XANNN This sets the index register I to the value NNN.
     case 0xA000:
         cpu->I = NNN;
-        cpu->pc += 2;
+
         break;
         // 0xBNNN this instruction jumped to the address NNN plus the value in the register V0
     case 0xB000:
@@ -232,7 +229,7 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         // 0xCXNN This instruction generates a random number, binary ANDs it with the value NN, and puts the result in VX.
     case 0xC000:
         cpu->V[x] = (rand() % 256) & NN;
-        cpu->pc += 2;
+
         break;
         /*0xDXYZ It will draw an N pixels tall sprite from the memory location
          that the I index register is holding to the screen, at the horizontal X coordinate in VX
@@ -271,7 +268,7 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
                 mask >>= 1;
             }
         }
-        cpu->pc += 2;
+
         break;
         // skip if key
     case 0xE000:
@@ -282,22 +279,20 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         case 0x9E:
             if (cpu->keys[cpu->V[x]])
             {
-                cpu->pc += 4;
+                cpu->pc += 2;
             }
             else
             {
-                cpu->pc += 2;
             }
             break;
             // EXA1 skips if the key corresponding to the value in VX is not pressed.
         case 0xA1:
             if (!cpu->keys[cpu->V[x]])
             {
-                cpu->pc += 4;
+                cpu->pc += 2;
             }
             else
             {
-                cpu->pc += 2;
             }
             break;
         }
@@ -308,26 +303,26 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             // FX07 sets VX to the current value of the delay timer
         case 0x07:
             cpu->V[x] = cpu->dtimer;
-            cpu->pc += 2;
+
             break;
             // FX15 sets the delay timer to the value in VX
         case 0x15:
             cpu->dtimer = cpu->V[x];
-            cpu->pc += 2;
+
             break;
             // FX18 sets the sound timer to the value in VX
         case 0x18:
             cpu->stimer = cpu->V[x];
-            cpu->pc += 2;
+
             break;
             // FX1E The index register I will get the value in VX added to it.
         case 0x1E:
             cpu->I += cpu->V[x];
-            cpu->pc += 2;
+
             break;
             // FX0A: Get key This instruction “blocks”; it stops executing instructions
             // and waits for key input (or loops forever, unless a key is pressed).
-        case 0x0A:
+        case 0x0A: ;
             bool isPressed = false;
             for (int i = 0; i < 16; i++)
             {
@@ -341,14 +336,14 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 
             if (isPressed)
             {
-                cpu->pc += 2;
+                cpu->pc -= 2;
             }
             break;
             // FX29: The index register I is set to the address of the hexadecimal character in VX
         case 0x29:
             uint8_t character = cpu->V[x] & 0x0F;
             cpu->I = character * 5 + FONT_SET_START_ADDRESS;
-            cpu->pc += 2;
+
             break;
             // FX33  It takes the number in VX (which is one byte, so it can be any number from 0 to 255) and converts it to three decimal digits,
             //  storing these digits in memory at the address in the index register I
@@ -356,7 +351,7 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             cpu->ram[cpu->I] = cpu->V[x] / 100;
             cpu->ram[cpu->I + 1] = (cpu->V[x] / 10) % 10;
             cpu->ram[cpu->I + 2] = cpu->V[x] % 10;
-            cpu->pc += 2;
+
             break;
             // FX55 the value of each variable register from V0 to VX inclusive (if X is 0, then only V0)
             //  will be stored in successive memory addresses, starting with the one that’s stored in I.
@@ -367,7 +362,6 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             {
                 cpu->ram[cpu->I + i] = cpu->V[i];
             }
-            cpu->pc += 2;
 
             break;
             // FX65 does the opposite; it takes the value stored at the memory addresses
@@ -375,9 +369,8 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         case 0x65:
             for (int i = 0; i <= x; i++)
             {
-                cpu->V[i]=cpu->ram[cpu->I + i];
+                cpu->V[i] = cpu->ram[cpu->I + i];
             }
-            cpu->pc += 2;
 
             break;
         }
