@@ -1,5 +1,5 @@
-#include "chip8.h"
-#include "display.h"
+#include "include/chip8.h"
+#include "include/display.h"
 
 static void chip8_push(chip8 *cpu, uint16_t address)
 {

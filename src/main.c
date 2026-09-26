@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "chip8.h"
-#include "display.h"
+#include "include/chip8.h"
+#include "include/display.h"
 
 void loadRom(chip8 *cpu, const char *filedir)
 {
