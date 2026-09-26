@@ -2,6 +2,7 @@
 #include <string.h>
 #include "include/chip8.h"
 #include "include/display.h"
+#include "include/keypad.h"
 
 void loadRom(chip8 *cpu, const char *filedir)
 {
@@ -34,13 +35,42 @@ int main(int argc, char **argv)
     chip8_init(&cpu);
     display_init(&disp);
 
-    loadRom(&cpu,"../BC_test.ch8");
+    loadRom(&cpu, "../Pong.ch8");
+    int keyCode;
+    while (running)
+    {
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                running = false;
+                break;
 
-    while(running){
-      
-        chip8_cycle(&cpu,&disp);
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+            {
+                int keyCode = keyToNum(event.key.keysym.sym);
+
+                if (keyCode != -1)
+                {
+                    cpu.keys[keyCode] = (event.type == SDL_KEYDOWN);
+                }
+                break;
+            }
+            }
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            chip8_cycle(&cpu, &disp);
+        }
         display_draw(&disp);
+
+        if (cpu.dtimer > 0) cpu.dtimer--;
+        if (cpu.stimer > 0) cpu.stimer--;
+
         display_update();
-        SDL_Delay(16);
-    } 
+
+        SDL_Delay(16); // to have approx. 60fps
+    }
 }
