@@ -39,12 +39,26 @@ bool display_init(display *disp)
 
 
 
-void display_draw(display *disp){
-    for(int i=0;i<PWIDTH;i++){
-         for(int j=0;j<PHEIGHT;j++){
-            display_draw_pixel(i,j,disp->pixels[j][i]);
+void display_draw(display *disp)
+{
+    // 1. Wipe the screen completely black to start the frame
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    // 2. Switch our paint color to White
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    // 3. ONLY draw the pixels that are supposed to be white
+    for (int i = 0; i < PWIDTH; i++) 
+    {
+        for (int j = 0; j < PHEIGHT; j++) 
+        {
+            if (disp->pixels[j][i]) 
+            {
+                SDL_RenderDrawPoint(renderer, i, j);
+            }
+        }
     }
-}
 }
 
 void display_clear()

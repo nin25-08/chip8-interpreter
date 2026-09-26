@@ -55,7 +55,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 
     switch (optype)
     {
-    case 0x0000:
+    case 0x0:
         // clears display
         if (opcode == 0x00E0)
         {
@@ -70,18 +70,18 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         break;
 
         // this instruction should simply set PC to NNN
-    case 0x1000:
+    case 0x1:
         cpu->pc = NNN;
         break;
 
         // 2NNN calls the subroutine at memory location NNN
-    case 0x2000:
+    case 0x2:
         chip8_push(cpu, cpu->pc);
         cpu->pc = NNN;
         break;
 
         // 3XNN will skip one instruction if the value in VX is equal to NN
-    case 0x3000:
+    case 0x3:
         if (cpu->V[x] == NN)
         {
             cpu->pc += 2;
@@ -93,7 +93,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         break;
 
         // 4XNN will skip one instruction if the value in VX is not equal to NN.
-    case 0x4000:
+    case 0x4:
         if (cpu->V[x] != NN)
         {
             cpu->pc += 2;
@@ -104,7 +104,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         break;
 
         // 5XY0 skips if the values in VX and VY are equal,
-    case 0x5000:
+    case 0x5:
         if (cpu->V[x] == cpu->V[y])
         {
             cpu->pc += 2;
@@ -115,19 +115,19 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         break;
 
         // 6XNN set the register VX to the value NN.
-    case 0x6000:
+    case 0x6:
         cpu->V[x] = NN;
 
         break;
 
         // 7XNN Add the value NN to VX.
-    case 0x7000:
+    case 0x7:
 
         cpu->V[x] += NN;
 
         break;
 
-    case 0x8000:
+    case 0x8:
         switch (z)
         {
             // 8XY0 VX is set to the value of VY.
@@ -190,7 +190,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         }
 
         break;
-    case 0x9000:
+    case 0x9:
         if (cpu->V[x] != cpu->V[y])
         {
             cpu->pc += 2;
@@ -200,23 +200,23 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         }
         break;
         // 0XANNN This sets the index register I to the value NNN.
-    case 0xA000:
+    case 0xA:
         cpu->I = NNN;
 
         break;
         // 0xBNNN this instruction jumped to the address NNN plus the value in the register V0
-    case 0xB000:
+    case 0xB:
         cpu->pc = NNN + cpu->V[0];
         break;
         // 0xCXNN This instruction generates a random number, binary ANDs it with the value NN, and puts the result in VX.
-    case 0xC000:
+    case 0xC:
         cpu->V[x] = (rand() % 256) & NN;
 
         break;
         /*0xDXYZ It will draw an N pixels tall sprite from the memory location
          that the I index register is holding to the screen, at the horizontal X coordinate in VX
          and the Y coordinate in VY*/
-    case 0xD000:;
+    case 0xD:;
         uint8_t x_start = cpu->V[x] % 64;
         uint8_t y_start = cpu->V[y] % 32;
         uint8_t height = z;
@@ -253,7 +253,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 
         break;
         // skip if key
-    case 0xE000:
+    case 0xE:
         switch (NN)
         {
             // EX9E will skip one instruction (increment PC by 2)
@@ -279,7 +279,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             break;
         }
         break;
-    case 0xF000:
+    case 0xF:
         switch (NN)
         {
             // FX07 sets VX to the current value of the delay timer
