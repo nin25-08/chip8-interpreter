@@ -16,8 +16,10 @@ static void display_draw_pixel(int x, int y, bool flag)
         SDL_RenderDrawPoint(renderer, x, y);
     }
 }
-bool display_init()
+bool display_init(display *disp)
 {
+    memset(disp,0,sizeof(*disp));
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
         return false;
@@ -29,7 +31,7 @@ bool display_init()
 
     SDL_RenderSetLogicalSize(renderer, 64, 32);
     // floods the blackground with back
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     return true;
@@ -39,15 +41,15 @@ bool display_init()
 
 void display_draw(display *disp){
     for(int i=0;i<PWIDTH;i++){
-         for(int j=0;i<PHEIGHT;j++){
-            display_draw_pixel(i,j,disp->pixels[i][j]);
+         for(int j=0;j<PHEIGHT;j++){
+            display_draw_pixel(i,j,disp->pixels[j][i]);
     }
 }
 }
 
 void display_clear()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 }
 
@@ -56,6 +58,4 @@ void display_update()
     SDL_RenderPresent(renderer);
 }
 
-void display_match(){
 
-}

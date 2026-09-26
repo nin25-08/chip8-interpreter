@@ -1,7 +1,6 @@
 #include "chip8.h"
 #include "display.h"
-#include <string.h>
-#include <stdlib.h>
+
 static void chip8_push(chip8 *cpu, uint16_t address)
 {
     if (cpu->sp >= STACK_SIZE)
@@ -18,7 +17,7 @@ static uint16_t chip8_pop(chip8 *cpu)
     if (cpu->sp == 0)
     {
         printf("STACK UNDERFLOW!");
-        return;
+        return 0;
     }
     cpu->sp--;
     return cpu->stack[cpu->sp];
@@ -43,25 +42,8 @@ const uint8_t font[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void chip8_init(chip8 *cpu)
-{
 
-    memset(cpu, 0, sizeof(*cpu)); // initializes cpumem to 0
-
-    cpu->pc = 0x200; // programs start from 0x200 address
-
-    memcpy(&cpu->ram[FONT_SET_START_ADDRESS], font, sizeof(font)); // loads font into memory
-}
-// FETCH
-void chip8_cycle(chip8 *cpu, display *disp)
-{
-    uint16_t opcode = (cpu->ram[cpu->pc] << 8) | cpu->ram[cpu->pc + 1];
-    //increment before to have it overwritten
-    cpu->pc += 2;
-    chip8_exec(cpu, disp, opcode);
-}
-// EXEC AND DECODE
-void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
+static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 {
     // bitwise masks
     uint8_t optype = (opcode & 0xF000) >> 12; // first nibble
@@ -377,3 +359,24 @@ void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         break;
     }
 }
+
+
+void chip8_init(chip8 *cpu)
+{
+
+    memset(cpu, 0, sizeof(*cpu)); // initializes cpumem to 0
+
+    cpu->pc = 0x200; // programs start from 0x200 address
+
+    memcpy(&cpu->ram[FONT_SET_START_ADDRESS], font, sizeof(font)); // loads font into memory
+}
+// FETCH
+void chip8_cycle(chip8 *cpu, display *disp)
+{
+    uint16_t opcode = (cpu->ram[cpu->pc] << 8) | cpu->ram[cpu->pc + 1];
+    //increment before to have it overwritten
+    printf("PC: 0x%04X | Opcode: 0x%04X\n", cpu->pc, opcode);
+    cpu->pc += 2;
+    chip8_exec(cpu, disp, opcode);
+}
+// EXEC AND DECODE
