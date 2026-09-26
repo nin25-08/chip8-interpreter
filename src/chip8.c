@@ -41,7 +41,7 @@ const uint8_t font[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
-
+// EXEC AND DECODE
 
 static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 {
@@ -88,7 +88,6 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
         }
         else
         {
-            
         }
         break;
 
@@ -166,11 +165,10 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 
             break;
         }
-        case 0x6:
+     case 0x6:
         {
-            cpu->V[0xF] = cpu->V[y] & 0x1;
-            cpu->V[x] = cpu->V[y] >> 1;
-
+            cpu->V[0xF] = cpu->V[x] & 0x1; // Save LSB of VX
+            cpu->V[x] >>= 1;               // Shift VX right in-place
             break;
         }
         case 0x7:
@@ -180,11 +178,12 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
 
             break;
         }
+            // 8XYE n the CHIP-8 interpreter for the original COSMAC VIP, this instruction did the following: It put the value of VY into VX,
+            // and then shifted the value in VX 1 bit to the right (8XY6) or left (8XYE)
         case 0xE:
         {
-            cpu->V[0xF] = (cpu->V[y] >> 7) & 0x1;
+            cpu->V[0xF] = (cpu->V[x] >> 7) & 0x1;
             cpu->V[x] = cpu->V[y] << 1;
-
             break;
         }
         }
@@ -304,7 +303,7 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
             break;
             // FX0A: Get key This instruction “blocks”; it stops executing instructions
             // and waits for key input (or loops forever, unless a key is pressed).
-        case 0x0A: ;
+        case 0x0A:;
             bool isPressed = false;
             for (int i = 0; i < 16; i++)
             {
@@ -360,7 +359,6 @@ static void chip8_exec(chip8 *cpu, display *disp, uint16_t opcode)
     }
 }
 
-
 void chip8_init(chip8 *cpu)
 {
 
@@ -374,9 +372,8 @@ void chip8_init(chip8 *cpu)
 void chip8_cycle(chip8 *cpu, display *disp)
 {
     uint16_t opcode = (cpu->ram[cpu->pc] << 8) | cpu->ram[cpu->pc + 1];
-    //increment before to have it overwritten
+    // increment before to have it overwritten
     printf("PC: 0x%04X | Opcode: 0x%04X\n", cpu->pc, opcode);
     cpu->pc += 2;
     chip8_exec(cpu, disp, opcode);
 }
-// EXEC AND DECODE
